@@ -3,12 +3,13 @@ import { useEffect, useState } from "react";
 import axios, { Axios } from "axios";
 
 function TodolistPage() {
-  const [todos, setTodos] = useState([
-
-  ]);
+  const [todos, setTodos] = useState([]);
 
   const [task, setTake] = useState("");
   const [longing, setLonding] = useState(false);
+
+  const [editingId, setEditingId] = useState(null);
+  const [editText, setEditText] = useState("");
 
   const fetchTodos = async () => {
     try {
@@ -73,22 +74,24 @@ function TodolistPage() {
     }
   };
 
-  // const EiditTask = async (id) => {
-  //   try {
-  //     await fetch(
-  //       "https://drive-accessible-pictures-send.trycloudflare.com/todos/7"
-  //       {
-  //         method: "PUT",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify({
-  //           id,
-  //           done: !currentStatus,
-  //         }),
-  //       },
-  //     );
-  //   };
+  const saveEdit = async (id) => {
+    try {
+      await axios(
+        "https://drive-accessible-pictures-send.trycloudflare.com/todos/7",
+        {
+          method: "PUT",
+        },
+      );
+      setTodos(
+        todos.map((todo) =>
+          todo.id === id ? { ...todo, content: editText } : todo,
+        ),
+      );
+      setEditingId(null);
+    } catch (err) {
+      console.error("Save error :", err);
+    }
+  };
 
   const deleteTask = async (id) => {
     try {
@@ -147,15 +150,43 @@ function TodolistPage() {
                   {todo.content}
                 </span>
               </div>
-              <button>
-                Edit
-              </button>
-              <button
-                onClick={() => deleteTask(todo.id)}
-                className="bg-red-400 hover:bg-red-500 px-4 rounded-r-lg "
-              >
-                X
-              </button>
+
+              <div className="flex gap-2 ml-2">
+                {editingId === todo.id ? (
+                  <>
+                    <button
+                      onClick={() => saveEdit(todo.id)}
+                      className="text-green-400 text-sm"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => setEditingId(null)}
+                      className="text-slate-400 text-sm"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {
+                        setEditingId(todo.id);
+                        setEditText(todo.text);
+                      }}
+                      className="text-blue-400 text-sm"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => deleteTask(todo.id)}
+                      className="text-red-400 text-sm"
+                    >
+                      X
+                    </button>
+                  </>
+                )}
+              </div>
             </li>
           ))}
         </ul>
